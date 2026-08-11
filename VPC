@@ -1,0 +1,162 @@
+Architecture Summary
+VPC across 2 Availability Zones.
+
+2 Public Subnets (for Load Balancer and NAT Gateway).
+
+2 Private Subnets (for application ec2 instances).
+
+Auto Scaling Group to manage EC2 instances in private subnets.
+
+Bastion / Jump Host in a public subnet to securely access private instances via SSH.
+
+Application Load Balancer (ALB) in public subnets to route incoming traffic on Port 80 to Port 8000 on the private instances.
+
+Step 1: Create the VPC Setup (AWS Console)
+Go to AWS Console → VPC → Create VPC.
+
+Select "VPC and more" [[08:58]].
+
+Set Name: AWS prod example [[11:35]].
+
+Configuration:
+
+Number of AZs: 2 [[11:56]]
+
+Public Subnets: 2 [[11:56]]
+
+Private Subnets: 2 [[11:56]]
+
+NAT Gateways: 1 per AZ [[12:04]]
+
+VPC Endpoints: None [[12:16]]
+
+Click Create VPC.
+
+Step 2: Create Launch Template & Auto Scaling Group (AWS Console)
+Go to EC2 → Launch Templates → Create Launch Template:
+
+Name: AWS prod example [[16:58]]
+
+AMI: Ubuntu [[17:43]]
+
+Instance Type: t2.micro [[17:55]]
+
+Security Group Inbound Rules:
+
+Allow SSH (Port 22) from 0.0.0.0/0 [[19:29]]
+
+Allow Custom TCP (Port 8000) from 0.0.0.0/0 [[19:50]]
+
+Go to Auto Scaling Groups → Create Auto Scaling Group:
+
+Name: AWS prod example [[20:23]]
+
+Select the Launch Template created above.
+
+Choose the VPC (AWS prod example) and select the 2 Private Subnets [[21:13]].
+
+Set Desired Capacity: 2, Min Capacity: 2, Max Capacity: 2 (or up to 4) [[22:09]].
+
+Review and Click Create Auto Scaling Group.
+
+Step 3: Launch a Bastion Host / Jump Host
+Go to EC2 → Launch Instances:
+
+Name: Bastion host [[25:51]]
+
+AMI: Ubuntu [[25:51]]
+
+Instance Type: t2.micro
+
+Key Pair: Select your .pem key (e.g., AWS-login.pem) [[26:02]]
+
+Network Settings: Select the created VPC (AWS prod example) and choose a Public Subnet [[26:40]].
+
+Auto-assign Public IP: Enable [[26:53]].
+
+Security Group: Allow SSH (Port 22) from anywhere [[26:13]].
+
+Click Launch Instance.
+
+Step 4: Copy Key Pair to Bastion Host & Access Private Instance
+Execute these commands from your local computer terminal:
+
+1. Securely Copy (SCP) your local .pem key to the Bastion Host [[28:55]]:
+Bash
+scp -i /path/to/your-key.pem /path/to/your-key.pem ubuntu@<BASTION_PUBLIC_IP>:~
+(Replace <BASTION_PUBLIC_IP> with the public IP address of your Bastion Host).
+
+2. SSH into the Bastion Host [[30:21]]:
+Bash
+ssh -i /path/to/your-key.pem ubuntu@<BASTION_PUBLIC_IP>
+3. Verify the key exists on the Bastion Host [[30:30]]:
+Bash
+ls -l
+4. Change file permissions of the .pem key (if required):
+Bash
+chmod 400 your-key.pem
+5. SSH from the Bastion Host into the Private EC2 Instance [[31:00]]:
+Bash
+ssh -i your-key.pem ubuntu@<PRIVATE_INSTANCE_IP>
+(Replace <PRIVATE_INSTANCE_IP> with the internal private IP of one of your private instances created by ASG).
+
+Step 5: Deploy the Web Application on the Private Instance
+Run these commands inside the private EC2 instance terminal [[31:47]]:
+
+Bash
+# 1. Create an index.html file
+cat << 'EOF' > index.html
+<!DOCTYPE html>
+<html>
+<body>
+<h1>My first AWS project</h1>
+<p>To demonstrate apps in private subnet</p>
+</body>
+</html>
+EOF
+
+# 2. Run Python Simple HTTP Server on Port 8000
+python3 -m http.server 8000
+(This starts a basic web server serving the HTML file on port 8000) [[32:45]].
+
+Step 6: Create Target Group & Application Load Balancer (AWS Console)
+1. Create Target Group [[36:52]]:
+Go to EC2 → Target Groups → Create Target Group.
+
+Target Type: Instances [[36:59]]
+
+Target Group Name: AWS-prod-example
+
+Protocol & Port: HTTP on Port 8000 [[39:08]]
+
+VPC: Choose AWS prod example [[37:18]]
+
+Register targets: Select the two private EC2 instances, click "Include as pending below", and click Create Target Group [[39:24]].
+
+2. Create Application Load Balancer (ALB) [[34:05]]:
+Go to EC2 → Load Balancers → Create Load Balancer → Application Load Balancer.
+
+Name: AWS-prod-example [[34:54]]
+
+Scheme: Internet-facing [[34:59]]
+
+VPC: Select AWS prod example
+
+Mappings: Select both Availability Zones and assign Public Subnets to both [[35:22]].
+
+Listeners and Routing: Set Listener to HTTP : Port 80 and forward to the Target Group created above [[36:43]].
+
+Click Create Load Balancer.
+
+3. Update Load Balancer Security Group [[42:43]]:
+Go to EC2 → Security Groups (for the Security Group attached to the ALB).
+
+Edit Inbound Rules: Add HTTP (Port 80) from source 0.0.0.0/0 [[42:51]].
+
+Step 7: Verify Access
+Copy the DNS Name of the Application Load Balancer from the EC2 Console [[43:19]].
+
+Open your web browser and paste the DNS name:
+
+Plaintext
+http://<ALB-DNS-NAME>
