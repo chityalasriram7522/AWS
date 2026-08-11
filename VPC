@@ -14,94 +14,88 @@ Application Load Balancer (ALB) in public subnets to route incoming traffic on P
 Step 1: Create the VPC Setup (AWS Console)
 Go to AWS Console → VPC → Create VPC.
 
-Select "VPC and more" [[08:58]].
+Select "VPC and more" 
 
-Set Name: AWS prod example [[11:35]].
+Set Name: AWS prod example  
 
 Configuration:
 
-Number of AZs: 2 [[11:56]]
+Number of AZs: 2 
+Public Subnets: 2  
 
-Public Subnets: 2 [[11:56]]
+Private Subnets: 2  
+NAT Gateways: 1 per AZ  
 
-Private Subnets: 2 [[11:56]]
-
-NAT Gateways: 1 per AZ [[12:04]]
-
-VPC Endpoints: None [[12:16]]
-
+VPC Endpoints: None  
 Click Create VPC.
 
 Step 2: Create Launch Template & Auto Scaling Group (AWS Console)
 Go to EC2 → Launch Templates → Create Launch Template:
 
-Name: AWS prod example [[16:58]]
+Name: AWS prod example  
+AMI: Ubuntu  
 
-AMI: Ubuntu [[17:43]]
-
-Instance Type: t2.micro [[17:55]]
-
+Instance Type: t2.micro  
 Security Group Inbound Rules:
 
-Allow SSH (Port 22) from 0.0.0.0/0 [[19:29]]
+Allow SSH (Port 22) from 0.0.0.0/0  
 
-Allow Custom TCP (Port 8000) from 0.0.0.0/0 [[19:50]]
-
+Allow Custom TCP (Port 8000) from 0.0.0.0/0  
 Go to Auto Scaling Groups → Create Auto Scaling Group:
 
-Name: AWS prod example [[20:23]]
+Name: AWS prod example  
 
 Select the Launch Template created above.
 
-Choose the VPC (AWS prod example) and select the 2 Private Subnets [[21:13]].
+Choose the VPC (AWS prod example) and select the 2 Private Subnets 
 
-Set Desired Capacity: 2, Min Capacity: 2, Max Capacity: 2 (or up to 4) [[22:09]].
+Set Desired Capacity: 2, Min Capacity: 2, Max Capacity: 2 (or up to 4)  
 
 Review and Click Create Auto Scaling Group.
 
 Step 3: Launch a Bastion Host / Jump Host
 Go to EC2 → Launch Instances:
 
-Name: Bastion host [[25:51]]
+Name: Bastion host  
 
-AMI: Ubuntu [[25:51]]
+AMI: Ubuntu  
 
 Instance Type: t2.micro
 
-Key Pair: Select your .pem key (e.g., AWS-login.pem) [[26:02]]
+Key Pair: Select your .pem key (e.g., AWS-login.pem)  
 
-Network Settings: Select the created VPC (AWS prod example) and choose a Public Subnet [[26:40]].
+Network Settings: Select the created VPC (AWS prod example) and choose a Public Subnet  
 
-Auto-assign Public IP: Enable [[26:53]].
+Auto-assign Public IP: Enable  
 
-Security Group: Allow SSH (Port 22) from anywhere [[26:13]].
+Security Group: Allow SSH (Port 22) from anywhere  
 
 Click Launch Instance.
 
 Step 4: Copy Key Pair to Bastion Host & Access Private Instance
 Execute these commands from your local computer terminal:
 
-1. Securely Copy (SCP) your local .pem key to the Bastion Host [[28:55]]:
+1. Securely Copy (SCP) your local .pem key to the Bastion Host  
 Bash
 scp -i /path/to/your-key.pem /path/to/your-key.pem ubuntu@<BASTION_PUBLIC_IP>:~
 (Replace <BASTION_PUBLIC_IP> with the public IP address of your Bastion Host).
 
-2. SSH into the Bastion Host [[30:21]]:
+2. SSH into the Bastion Host  
 Bash
 ssh -i /path/to/your-key.pem ubuntu@<BASTION_PUBLIC_IP>
-3. Verify the key exists on the Bastion Host [[30:30]]:
+3. Verify the key exists on the Bastion Host  
 Bash
 ls -l
 4. Change file permissions of the .pem key (if required):
 Bash
 chmod 400 your-key.pem
-5. SSH from the Bastion Host into the Private EC2 Instance [[31:00]]:
+5. SSH from the Bastion Host into the Private EC2 Instance  
 Bash
 ssh -i your-key.pem ubuntu@<PRIVATE_INSTANCE_IP>
 (Replace <PRIVATE_INSTANCE_IP> with the internal private IP of one of your private instances created by ASG).
 
 Step 5: Deploy the Web Application on the Private Instance
-Run these commands inside the private EC2 instance terminal [[31:47]]:
+Run these commands inside the private EC2 instance terminal  
 
 Bash
 # 1. Create an index.html file
@@ -117,46 +111,173 @@ EOF
 
 # 2. Run Python Simple HTTP Server on Port 8000
 python3 -m http.server 8000
-(This starts a basic web server serving the HTML file on port 8000) [[32:45]].
+(This starts a basic web server serving the HTML file on port 8000)  
 
 Step 6: Create Target Group & Application Load Balancer (AWS Console)
-1. Create Target Group [[36:52]]:
+1. Create Target Group  
 Go to EC2 → Target Groups → Create Target Group.
 
-Target Type: Instances [[36:59]]
+Target Type: Instances  
 
 Target Group Name: AWS-prod-example
 
-Protocol & Port: HTTP on Port 8000 [[39:08]]
+Protocol & Port: HTTP on Port 8000  
 
-VPC: Choose AWS prod example [[37:18]]
+VPC: Choose AWS prod example  
 
 Register targets: Select the two private EC2 instances, click "Include as pending below", and click Create Target Group [[39:24]].
 
-2. Create Application Load Balancer (ALB) [[34:05]]:
+2. Create Application Load Balancer (ALB)  
 Go to EC2 → Load Balancers → Create Load Balancer → Application Load Balancer.
 
-Name: AWS-prod-example [[34:54]]
-
-Scheme: Internet-facing [[34:59]]
+Name: AWS-prod-example  
+Scheme: Internet-facing  
 
 VPC: Select AWS prod example
 
-Mappings: Select both Availability Zones and assign Public Subnets to both [[35:22]].
+Mappings: Select both Availability Zones and assign Public Subnets to both  
 
-Listeners and Routing: Set Listener to HTTP : Port 80 and forward to the Target Group created above [[36:43]].
+Listeners and Routing: Set Listener to HTTP : Port 80 and forward to the Target Group created above  
 
 Click Create Load Balancer.
 
-3. Update Load Balancer Security Group [[42:43]]:
+3. Update Load Balancer Security Group  
 Go to EC2 → Security Groups (for the Security Group attached to the ALB).
 
-Edit Inbound Rules: Add HTTP (Port 80) from source 0.0.0.0/0 [[42:51]].
+Edit Inbound Rules: Add HTTP (Port 80) from source 0.0.0.0/0  
 
 Step 7: Verify Access
-Copy the DNS Name of the Application Load Balancer from the EC2 Console [[43:19]].
+Copy the DNS Name of the Application Load Balancer from the EC2 Console  
 
 Open your web browser and paste the DNS name:
 
 Plaintext
 http://<ALB-DNS-NAME>
+
+
+
+
+How to Fix (Step-by-Step)
+Step 1: Run SCP correctly from your Windows terminal
+Open Command Prompt / PowerShell on your local machine and run the following command (notice the :~ at the end):
+
+DOS
+scp -i "C:\Users\.............\aws-login.pem" "C:\Users\.............\aws-login.pem" ubuntu@ec2 public ip:~
+
+Step 2: SSH into the Bastion Host
+From the same Windows terminal:
+
+DOS
+ssh -i C:\Users\............\aws-login.pem ubuntu@ec2 public ip
+Step 3: Fix File Permissions on the Bastion Host
+Once logged in as ubuntu@ check that the file is present and set the correct permissions:
+
+Bash
+# Verify the key file is present
+ls -l
+
+# Set secure read-only permissions for the key
+chmod 400 aws-login.pem
+Step 4: SSH into your Private Instance
+Now connect to your private EC2 instance using the full key name (aws-login.pem):
+
+Bash
+ssh -i aws-login.pem ubuntu@private subnet priavte ip
+
+
+
+: Kill the process using the port (Recommended)
+Run the following commands on your private EC2 instance to find and kill the running process:
+
+Bash
+# 1. Identify the process ID (PID) running on port 8000
+sudo lsof -i :8000
+
+# OR using fuser:
+sudo fuser 8000/tcp
+To stop or kill the process blocking port 8000:
+
+Bash
+# Kill the process running on port 8000 directly
+sudo fuser -k 8000/tcp
+Once killed, re-run your web server:
+
+Bash
+python3 -m http.server 8000
+Option 2: Run the server in the background (nohup)
+If you want the web server to keep running even after closing your SSH terminal session, launch it with nohup:
+
+Bash
+nohup python3 -m http.server 8000 > server.log 2>&1 &
+Option 3: Run on a different port
+If you don't want to kill the existing process, start the server on a different port (e.g., 8080):
+
+Bash
+python3 -m http.server 8080
+
+
+ 
+
+The two instances passing health checks are i-064179cf412bfd1df (in us-east-1b) and i-0211d3b5fcd576 (in us-east-1a).
+
+If you ran the Python web server on both of those instances with the exact same index.html file (e.g. both containing "My Second AWS Project"), refreshing will keep showing "My Second AWS Project" even though load balancing is working across both!
+
+How to Fix This Step-by-Step
+Step 1: Deregister the Unhealthy Target
+Select the checkbox next to the unhealthy instance  
+Click the Deregister button at the top right of the table.
+
+Step 2: Set Different HTML Content on the 2 Healthy Instances
+Log into each of the two healthy instances via your Bastion Host to ensure Instance 1 and Instance 2 return different text:
+
+For Instance 1 
+Bash
+# Connect via SSH from Bastion Host
+ssh -i aws-login.pem ubuntu@<PRIVATE_IP_OF_ >
+
+# Stop existing python server
+sudo fuser -k 8000/tcp
+
+# Create HTML for Instance 1
+cat << 'EOF' > index.html
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>My First AWS Project</h1>
+  <p>Served from Instance 1 (us-east-1a)</p>
+</body>
+</html>
+EOF
+
+# Restart server
+nohup python3 -m http.server 8000 > server.log 2>&1 &
+
+exit
+For Instance 2 
+Bash
+# Connect via SSH from Bastion Host
+ssh -i aws-login.pem ubuntu@<PRIVATE_IP_OF>
+
+# Stop existing python server
+sudo fuser -k 8000/tcp
+
+# Create HTML for Instance 2
+cat << 'EOF' > index.html
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>My Second AWS Project</h1>
+  <p>Served from Instance 2 (us-east-1b)</p>
+</body>
+</html>
+EOF
+
+# Restart server
+nohup python3 -m http.server 8000 > server.log 2>&1 &
+
+exit
+Step 3: Test Load Balancing via Terminal (curl)
+Run curl multiple times from your local Windows terminal to bypass browser caching:
+
+DOS
+curl http://aws-prod-example ...........us-east-1.elb.amazonaws.com
