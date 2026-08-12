@@ -280,4 +280,4 @@ Step 3: Test Load Balancing via Terminal (curl)
 Run curl multiple times from your local Windows terminal to bypass browser caching:
 
 DOS
-curl http://aws-prod-example ...........us-east-1.elb.amazonaws.com
+curl http://aws-prod-example ...........us-east-1.elb.amazonaws.com.  we will show application in browser 
