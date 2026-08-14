@@ -193,3 +193,71 @@ React Website → S3
 User Uploads → S3
 Database → RDS
 Backend → EC2
+
+
+PROJECT 
+Hands-On Project 1: Securing S3 Buckets via Bucket PoliciesScenario: 
+Restricting access to a specific S3 bucket containing sensitive data, even if an IAM user has broad S3FullAccess permissions globally.
+Setup:
+Creates a user with full S3FullAccess who can list and download files from all buckets.
+Policy Configuration:
+Writes a JSON Bucket Policy attached directly to the sensitive bucket.
+Condition Logic:
+The policy explicitly DENIES all S3 actions (*) for every principal (*) UNLESS the PrincipalArn matches the specific bucket owner's account ID (StringNotEquals).
+Result: 
+When the unprivileged IAM user attempts to download files from that specific bucket, AWS returns an Access Denied error, demonstrating that Bucket Policies take precedence over IAM policies.
+
+day-9/demos/bucket-policies/restrict-access-to-owner.json
+{
+  "Version": "2012-10-17",
+  "Id": "RestrictBucketToIAMUsersOnly",
+  "Statement": [
+    {
+      "Sid": "AllowOwnerOnlyAccess",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::your-bucket-name/*",
+        "arn:aws:s3:::your-bucket-name"
+      ],
+      "Condition": {
+        "StringNotEquals": {
+          "aws:PrincipalArn": "arn:aws:iam::AWS_ACCOUNT_ID:root"
+        }
+      }
+    }
+  ]
+}
+
+
+
+Hands-On Project 2:
+Hosting a Static Website on S3Scenario: Deploying a simple HTML website cheaply using S3's static web hosting capabilities.
+Upload Content: 
+Uploads a basic index.html file to an S3 bucket.
+Enable Web Hosting:
+Navigates to Bucket Properties $\rightarrow$ Static Website Hosting, enables the feature, and sets the index document to index.html.
+Unblock Public Access: 
+Unchecks the "Block all public access" setting at the bucket level.
+Grant Public Read Policy:
+Attaches a public read JSON policy allowing s3:GetObject permissions for everyone (Principal: "*").Testing: Accesses the generated S3 website endpoint URL in a web browser to reveal the live HTML website.
+
+
+day-9/demos/bucket-policies/static-website-basic.json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::<Bucket-Name>/*"
+            ]
+        }
+    ]
+}
