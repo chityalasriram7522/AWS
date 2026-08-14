@@ -1,0 +1,195 @@
+What is Amazon S3?
+
+Simple Storage Service is a scalable and secure cloud storage service provided by Amazon Web Services (AWS). It allows you to store and retrieve any amount of data from anywhere on the web.
+It is used to store:
+
+Images
+Videos
+PDFs
+Documents
+Backups
+Website files
+Application logs
+
+Think of S3 as a highly secure cloud storage system.
+What are S3 buckets?
+
+S3 buckets are containers for storing objects (files) in Amazon S3. Each bucket has a unique name globally across all of AWS. You can think of an S3 bucket as a top-level folder that holds your data.
+
+Why Do We Need S3?
+
+Suppose you have a Node.js application running on EC2.
+
+Users upload images.
+
+Without S3:
+
+EC2
+ |
+Images
+
+Problems:
+
+Server storage fills up
+Difficult backups
+Hard to scale
+
+With S3:
+
+EC2
+ |
+S3 Bucket
+ |
+Images
+
+Now S3 handles file storage.
+
+Your EC2 focuses on running the application.
+
+Why use S3 buckets?
+
+S3 buckets provide a reliable and highly scalable storage solution for various use cases. They are commonly used for backup and restore, data archiving, content storage for websites, and as a data source for big data analytics.
+
+Key benefits of S3 buckets
+
+S3 buckets offer several advantages, including:
+
+Durability and availability: S3 provides high durability and availability for your data.
+Scalability: You can store and retrieve any amount of data without worrying about capacity constraints.
+Security: S3 offers multiple security features such as encryption, access control, and audit logging.
+Performance: S3 is designed to deliver high performance for data retrieval and storage operations.
+Cost-effective: S3 offers cost-effective storage options and pricing models based on your usage patterns.
+
+
+
+S3 Versioning
+
+Suppose:
+
+resume.pdf
+
+You upload a new version.
+
+Without Versioning:
+
+Old File Lost
+
+With Versioning:
+
+Version 1
+Version 2
+Version 3
+
+You can restore older versions.
+
+Real-World Example
+
+Google Docs:
+
+Version History
+
+S3 Versioning works similarly.
+
+S3 Lifecycle Rules
+
+Automatically move files between storage classes.
+
+Example:
+
+After 30 Days
+   |
+Move to Standard-IA
+
+
+After 1 Year
+   |
+Move to Glacier
+
+This saves money.
+
+S3 Bucket Policies
+
+Bucket Policies control who can access objects.
+
+Example:
+
+Public Read Access
+
+Anyone can view files.
+
+OR
+
+Private Access
+
+Only authorized users can view files.
+
+Static Website Hosting
+
+One of the most popular uses of S3.
+
+Suppose you build:
+
+React Portfolio
+
+You can host it directly from S3.
+
+Architecture:
+
+User
+ |
+S3 Bucket
+ |
+React Website
+No EC2 required.
+
+
+
+
+S3 Security
+Private Bucket
+Only Authorized Users
+Public Bucket
+Anyone Can Access
+IAM Policies
+
+Control:
+
+Upload Files
+Delete Files
+Read Files
+Durability and Availability
+
+AWS S3 is famous because it provides:
+
+99.999999999% Durability
+
+This is called:
+
+11 Nines Durability
+
+Meaning:
+
+Your data is extremely unlikely to be lost.
+
+AWS stores multiple copies across devices.
+
+Real Full-Stack Architecture
+Users
+   |
+React Frontend (S3)
+   |
+EC2 (Node.js Backend)
+   |
+RDS (Database)
+
+
+Images
+   |
+S3 Bucket
+
+Common usage:
+
+React Website → S3
+User Uploads → S3
+Database → RDS
+Backend → EC2
