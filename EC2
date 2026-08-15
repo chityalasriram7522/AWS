@@ -1,0 +1,68 @@
+The Core Concept: What is EC2? (Terminology Breakdown)
+Abhishek starts by deconstructing the acronym EC2 = Elastic Cloud Compute:
+
+Compute: You are asking AWS for a virtual server that provides CPU, RAM, and storage (Disk).
+
+Cloud: The virtual server runs on AWS’s public cloud infrastructure rather than your local laptop or on-premises server.
+
+Elastic: The resources can be easily scaled up or down on demand (increasing RAM, expanding disk size, or launching/terminating instances based on traffic).
+
+2. The "Why" & The Real-World Problem
+He explains why companies choose EC2 over buying physical servers (like IBM or HP):
+
+No Infrastructure Maintenance: With physical servers, sysadmins waste hours handling OS upgrades, hardware failures, patches, and power management. AWS manages the underlying hardware and hypervisor layer.
+
+Cost Efficiency (Pay-As-You-Go): You only pay for the exact hours an EC2 instance runs. You can shut it down during weekends or off-peak hours to save money.
+
+3. Key Architectural Concepts
+EC2 Instance Types:
+
+General Purpose: Balanced CPU and RAM (e.g., t2.micro). Used for standard web servers, testing, and beginner practice.
+
+Compute Optimized: High CPU-to-memory ratio; used for gaming servers, batch processing, or machine learning.
+
+Memory Optimized: High RAM-to-CPU ratio; used for real-time big data analytics and in-memory databases.
+
+Storage Optimized / Accelerated Compute: High-throughput local storage or GPU-accelerated workloads.
+
+Regions & Availability Zones (AZs):
+
+Regions: Geographic locations around the world (e.g., us-east-1 in Virginia, ap-south-1 in Mumbai) chosen based on client proximity (latency) or data privacy compliance.
+
+Step-by-Step Hands-On Project: Deploying Jenkins on EC2
+To connect the theoretical concepts to real DevOps work, he completes a full hands-on deployment:
+
+Step A: Launching an EC2 Instance
+Navigates to the EC2 Dashboard in the AWS Management Console.
+
+Selects Ubuntu as the Operating System distribution.
+
+Chooses the t2.micro instance type (1 CPU, 1 GB RAM), highlighting that it fits within the AWS Free Tier (750 hours/month).
+
+Creates and downloads an RSA Key Pair (.pem file), explaining that AWS disables password logins by default for security.
+
+Step B: Connecting via Terminal (SSH)
+Demonstrates using SSH from a terminal (ssh -i AWS_login.pem ubuntu@<Public-IP>).
+
+Fixes a common SSH permission error using chmod 600 AWS_login.pem to restrict key file permissions.
+
+Step C: Deploying the Application (Jenkins)
+Runs sudo apt update to refresh package repositories.
+
+Installs the prerequisite Java runtime (openjdk-11-jdk).
+
+Installs the Jenkins service and verifies its status with systemctl status jenkins.
+
+Step D: Exposing the App to the World (Networking & Security Groups)
+Tries opening http://<Public-IP>:8080 in a browser, showing that it fails to load by default.
+
+Explains Security Groups as virtual firewalls:
+
+Inbound Rules: Control incoming traffic to the server.
+
+Adds a custom TCP inbound rule for Port 8080 (Jenkins' default port) allowing traffic from 0.0.0.0/0 (anywhere).
+
+Refreshes the browser to reveal the live Jenkins setup screen, completing the deployment.
+
+ 
+Availability Zones (AZs): Isolated data centers within a region (e.g., us-east-1a, us-east-1b) designed to ensure high availability and disaster recovery.
