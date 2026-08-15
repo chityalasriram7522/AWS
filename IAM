@@ -1,0 +1,101 @@
+What is IAM?
+
+IAM (Identity and Access Management) is the AWS service that controls:
+
+Who can log in to AWS
+What they can access
+What they are allowed to do
+Which AWS resources they can use
+
+Think of IAM as the security guard of AWS.
+
+It decides:
+
+"Who are you?"
+
+and
+
+"What are you allowed to do?"
+
+Real World Example
+
+Imagine a company called ABC Technologies.
+
+They have:
+
+20 Developers
+10 Testers
+5 HR Employees
+3 Database Administrators
+2 DevOps Engineers
+1 CEO
+
+Everyone uses AWS.
+
+Question:
+
+Should everyone have full AWS access?
+
+No.
+
+Why?
+
+Because a tester should not delete production servers.
+
+An HR employee should not access databases.
+
+A developer should not change billing settings.
+
+This is exactly why IAM exists.
+
+AWS Without IAM
+
+Suppose AWS had no IAM.
+
+Everyone knows the AWS account password.
+
+One day a junior developer accidentally deletes:
+
+EC2
+RDS
+S3
+
+Company loses everything.
+
+Huge disaster.
+
+IAM prevents this.
+
+2. Breakdown of the 4 Key IAM Components
+He explains why IAM uses four distinct components rather than just single user logins:
+
+IAM Users: Created for individual team members to log into AWS. They handle authentication.
+
+IAM Policies: Written permissions (in JSON format) attached to users or groups that define what actions are allowed or denied. They handle authorization.
+
+IAM Groups: Collections of users categorized by team or role (e.g., Developers, QA, DB Admins). Attaching policies to a group ensures you don't have to manually update permissions for every single employee individually when permissions change.
+
+IAM Roles: Temporary access credentials used when an external application, server, or another AWS account needs permission to interact with your resources without using permanent human login credentials.
+
+PRATICAL SESSSION DEMO
+
+Step-by-Step Practical Demonstration
+He proves how these concepts work in action using two separate browser logins (Root vs. Test User):
+
+Step 1: Authentication without Authorization
+
+He creates a new user (test-user-501) without attaching any policies.
+
+He logs in as test-user-501. The login succeeds (Authentication works), but clicking on S3 or EC2 returns "Access Denied" errors (Authorization fails).
+
+Step 2: Adding Authorization via Policies
+
+He switches back to the Root account and attaches the AmazonS3FullAccess policy to test-user-501.
+
+Switching back to test-user-501, the user can now successfully view and create S3 buckets.
+
+Step 3: Scaling with User Groups
+
+He creates a group called Development and attaches S3 and EC2 full access policies to the group.
+
+Adding test-user-501 to the group automatically grants all group permissions at once, demonstrating how devops engineers manage permissions efficiently.
