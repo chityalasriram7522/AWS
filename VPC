@@ -267,7 +267,6 @@ cat << 'EOF' > index.html
 <html>
 <body>
   <h1>My Second AWS Project</h1>
-  <p>Served from Instance 2 (us-east-1b)</p>
 </body>
 </html>
 EOF
